@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+  <div class="flex w-full max-w-4xl bg-white rounded-lg shadow-lg">
+    
+    <!-- Image Section -->
+    <div class="w-1/2 bg-indigo-600 flex items-center justify-center p-6">
+      <img src="https://pluspng.com/img-png/user-png-icon-account-avatar-human-male-man-men-people-person-download-svg-download-png-edit-icon-512.png" alt="user" class="w-32 h-32 rounded-full">
+    </div>
+
+    <!-- Login Form Section -->
+    <div class="w-1/2 p-8">
+      <h2 class="text-2xl font-semibold text-center text-gray-800 mb-6">Login</h2>
+      <form (submit)="login(userData)">
+        <!-- Email -->
+        <div class="mb-4">
+          <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+          <input type="text" name="email" id="email" class="mt-2 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Email" [(ngModel)]="userData.email">
+        </div>
+
+        <!-- Password -->
+        <div class="mb-4">
+          <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+          <input type="password" name="password" id="password" class="mt-2 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="********" [(ngModel)]="userData.password">
+          <div class="text-right mt-2">
+            <a href="/forget-password" class="text-sm text-indigo-600 hover:text-indigo-900">Forgot Password?</a>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="text-center">
+          <button type="submit" class="w-full py-3 bg-indigo-600 text-white font-bold rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            Login
+          </button>
+        </div>
+      </form>
+
+      <!-- Sign Up Link -->
+      <div class="text-center mt-4">
+        <p class="text-sm text-gray-600">Don't have an account? <a href="/sign-up" class="text-indigo-600 hover:text-indigo-900">Sign Up</a> here.</p>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
