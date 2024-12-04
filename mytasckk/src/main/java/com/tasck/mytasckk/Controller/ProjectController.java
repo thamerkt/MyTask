@@ -12,6 +12,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/projects")
+@CrossOrigin(origins = "http://localhost:4200")
 public class ProjectController {
 
     @Autowired
@@ -91,7 +92,7 @@ public class ProjectController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Project not found");
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting project");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting project" +e.getMessage());
         }
     }
 }

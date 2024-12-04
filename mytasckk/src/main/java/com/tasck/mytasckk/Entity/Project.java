@@ -3,43 +3,39 @@ package com.tasck.mytasckk.Entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Entity
 public class Project {
 
-    public int getProject_id() {
-        return project_id;
-    }
-
-    public void setProject_id(int project_id) {
-        this.project_id = project_id;
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int project_id;
+    private int id;
+
     private String name;
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Task> tasks;
 
+    // Using Date type for date_start and date_end
+    @JsonFormat(pattern = "yyyy-MM-dd")  // Ensure the date format is compatible
+    private Date date_start;
 
-    // Use LocalDateTime for better handling of date/time
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")  // Ensure the date format is compatible
-    private LocalDateTime date_start;
-
-    // Use LocalDateTime for consistency with date_start
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")  // Ensure the date format is compatible
-    private LocalDateTime date_end;
+    @JsonFormat(pattern = "yyyy-MM-dd")  // Ensure the date format is compatible
+    private Date date_end;
 
     private String description;
 
     // Getters and Setters
 
+    public int getId() {
+        return id;
+    }
 
-
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
@@ -49,19 +45,19 @@ public class Project {
         this.name = name;
     }
 
-    public LocalDateTime getDate_start() {
+    public Date getDate_start() {
         return date_start;
     }
 
-    public void setDate_start(LocalDateTime date_start) {
+    public void setDate_start(Date date_start) {
         this.date_start = date_start;
     }
 
-    public LocalDateTime getDate_end() {
+    public Date getDate_end() {
         return date_end;
     }
 
-    public void setDate_end(LocalDateTime date_end) {
+    public void setDate_end(Date date_end) {
         this.date_end = date_end;
     }
 
@@ -71,5 +67,13 @@ public class Project {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public List<Task> getTasks() {
+        return tasks;
+    }
+
+    public void setTasks(List<Task> tasks) {
+        this.tasks = tasks;
     }
 }

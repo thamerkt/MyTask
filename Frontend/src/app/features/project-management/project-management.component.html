@@ -1,0 +1,154 @@
+<div class="container mx-auto p-4">
+  <h1 class="text-2xl font-bold mb-4 text-center">Project Management</h1>
+
+  <!-- Add Project Button -->
+  <div class="text-right mb-4">
+    <button
+      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      (click)="toggleAddProjectForm()"
+    >
+      {{ showAddProjectForm ? "Close Form" : "Add New Project" }}
+    </button>
+  </div>
+
+  <!-- Add Project Form -->
+  <div *ngIf="showAddProjectForm" class="mb-4 bg-gray-100 p-4 border rounded shadow-md">
+    <h2 class="text-xl font-semibold mb-2">Add New Project</h2>
+    <form (ngSubmit)="addProject()">
+      <div class="mb-4">
+        <label for="name" class="block font-medium mb-1">Project Name</label>
+        <input
+          [(ngModel)]="newProject.name"
+          name="name"
+          id="name"
+          class="w-full border rounded px-2 py-1"
+          type="text"
+          placeholder="Enter project name"
+          required
+        />
+      </div>
+      <div class="mb-4">
+        <label for="date_start" class="block font-medium mb-1">Start Date</label>
+        <input
+          [(ngModel)]="newProject.date_start"
+          name="date_start"
+          id="date_start"
+          class="w-full border rounded px-2 py-1"
+          type="date"
+          required
+        />
+      </div>
+      <div class="mb-4">
+        <label for="date_end" class="block font-medium mb-1">End Date</label>
+        <input
+          [(ngModel)]="newProject.date_end"
+          name="date_end"
+          id="date_end"
+          class="w-full border rounded px-2 py-1"
+          type="date"
+          required
+        />
+      </div>
+      <div class="mb-4">
+        <label for="description" class="block font-medium mb-1">Description</label>
+        <textarea
+          [(ngModel)]="newProject.description"
+          name="description"
+          id="description"
+          class="w-full border rounded px-2 py-1"
+          rows="3"
+          placeholder="Enter project description"
+          required
+        ></textarea>
+      </div>
+      <button
+        class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+        type="submit"
+      >
+        Add Project
+      </button>
+    </form>
+  </div>
+
+  <!-- Project Table -->
+  <div class="overflow-x-auto">
+    <table class="table-auto w-full border border-gray-300 shadow-md">
+      <thead class="bg-gray-800 text-white">
+        <tr>
+          <th class="px-4 py-2 text-left">Name</th>
+          <th class="px-4 py-2 text-left">id</th>
+          <th class="px-4 py-2 text-left">Start Date</th>
+          <th class="px-4 py-2 text-left">End Date</th>
+          <th class="px-4 py-2 text-left">Description</th>
+          <th class="px-4 py-2 text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let project of Projects" class="border-b hover:bg-gray-100">
+          <!-- Editable Fields -->
+          <td class="px-4 py-2">
+            <input
+              *ngIf="editedProject?.id === project.id"
+              [(ngModel)]="editedProject.name"
+              name="editName"
+              class="w-full border rounded px-2 py-1"
+            />
+            <span *ngIf="editedProject?.id !== project.id">
+              {{ project.name }}
+            </span>
+          </td>
+          <td class="px-4 py-2">
+            {{ project.id }}
+          </td>
+          <td class="px-4 py-2">
+            {{ project.date_start | date }}
+          </td>
+          <td class="px-4 py-2">
+            {{ project.date_end | date }}
+          </td>
+          <td class="px-4 py-2">
+            <textarea
+              *ngIf="editedProject?.id === project.id"
+              [(ngModel)]="editedProject.description"
+              name="editDescription"
+              class="w-full border rounded px-2 py-1"
+              rows="2"
+              placeholder="Edit description"
+            ></textarea>
+            <span *ngIf="editedProject?.id !== project.id">
+              {{ project.description }}
+            </span>
+          </td>
+          <!-- Action Buttons -->
+          <td class="px-4 py-2 text-center space-x-2">
+            <button
+              *ngIf="editedProject?.id !== project.id"
+              (click)="edit(project)"
+              class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-3 rounded"
+            >
+              Edit
+            </button>
+            <button
+              *ngIf="editedProject?.id === project.id"
+              (click)="save()"
+              class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-3 rounded"
+            >
+              Save
+            </button>
+            <button
+              (click)="delete(project.id)"
+              class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="Projects.length === 0">
+          <td colspan="5" class="px-4 py-2 text-center text-gray-500">
+            No projects available.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

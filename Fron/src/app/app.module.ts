@@ -13,7 +13,6 @@ import { ProjectManagementComponent } from './features/project-management/projec
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { Socket } from 'socket.io';
 import { SocketIoConfig, SocketIoModule } from 'ngx-socket-io';
-import { MessagingComponent } from './features/messaging/messaging.component';
 
 const config: SocketIoConfig = { url: 'https://exampleUrl.com', options: {} };
 
@@ -25,7 +24,6 @@ const config: SocketIoConfig = { url: 'https://exampleUrl.com', options: {} };
     NavbarComponent,
     TaskManagementComponent,
     ProjectManagementComponent,
-    MessagingComponent
   ],
   imports: [
     BrowserModule,

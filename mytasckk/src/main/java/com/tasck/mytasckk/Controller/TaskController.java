@@ -17,6 +17,7 @@ import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
 @RestController
 @RequestMapping("/task")
+@CrossOrigin(origins = "http://localhost:4200")
 public class TaskController {
     @Autowired
     public TaskRepository taskRep;
@@ -24,11 +25,23 @@ public class TaskController {
     @GetMapping("/")
     public ResponseEntity<List<Task>> getAllTasks() {
         try {
-            List<Task> tasks = taskRep.findAll();  // Retrieve all tasks from the repository
-            return ResponseEntity.ok(tasks);  // Return 200 OK with the tasks as JSON
+            // Retrieve all tasks from the repository
+            List<Task> tasks = taskRep.findAll();
+
+            // Check if the list is empty
+            if (tasks.isEmpty()) {
+                return ResponseEntity.noContent().build();  // Return 204 No Content
+            }
+
+            // Return 200 OK with the tasks as JSON
+            return ResponseEntity.ok(tasks);
         } catch (Exception e) {
+            // Log the exception for debugging
+            e.printStackTrace();
+
+            // Return 500 Internal Server Error
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);  // In case of error, return HTTP 500 with null body
+                    .body(null);
         }
     }
 
@@ -94,19 +107,22 @@ public class TaskController {
         }
     }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deletebyid(@PathVariable Long id){
-        Task task=taskRep.findById(id);
-        if (task==null){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("task not found");
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteTaskById(@PathVariable Long id) {
+        // Check if the task exists
+        Task task = taskRep.findById(id);
+        if (task == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Task not found");
         }
-        try{
+
+        try {
+            // Delete the task
             taskRep.deleteById(Math.toIntExact(id));
-            return ResponseEntity.ok("task deleted succeffuly");
+            return ResponseEntity.ok("Task deleted successfully");
 
-
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleteting task:"+e.getMessage());
+        } catch (Exception e) {
+            // Handle any error that occurs during deletion
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting task: " + e.getMessage());
         }
     }
 

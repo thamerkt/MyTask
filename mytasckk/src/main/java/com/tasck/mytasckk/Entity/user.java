@@ -12,12 +12,20 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
-public class user implements UserDetails { // Class name changed to 'User' (capitalized)
+public class user implements UserDetails {
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(nullable = false)
-    private Integer userId;
+    private Integer id;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Task> tasks;
@@ -27,6 +35,16 @@ public class user implements UserDetails { // Class name changed to 'User' (capi
 
     @Column(unique = true, length = 100, nullable = false)
     private String email;
+
+    public void setVerificationToken(String verificationToken) {
+        this.verificationToken = verificationToken;
+    }
+
+    public String getVerificationToken() {
+        return verificationToken;
+    }
+
+    private String verificationToken;
 
     @Column(nullable = false)
     private String password;
@@ -39,18 +57,23 @@ public class user implements UserDetails { // Class name changed to 'User' (capi
     @Column(name = "updated_at")
     private Date updatedAt;
 
-    // Getters and Setters
-    public Integer getUserId() {
-        return userId;
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
     }
+
+
+
+    // Getters and Setters
+
 
     public List<Task> getTasks() {
         return tasks;
     }
+
 
     public void setTasks(List<Task> tasks) {
         this.tasks = tasks;

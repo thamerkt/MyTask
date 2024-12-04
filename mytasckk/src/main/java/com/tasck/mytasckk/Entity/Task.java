@@ -8,15 +8,17 @@ public class Task {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Fixed naming convention for `Id`
+    private Long id;
+
+    // Use proper naming conventions and reference mappings
+    @ManyToOne
+    @JsonBackReference(value = "user-tasks")  // Prevent circular reference and add a unique reference for clarity
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+    private user user;  // Use 'User' as the class name should start with an uppercase letter
 
     @ManyToOne
-    @JsonBackReference  // Prevent circular reference here
-    @JoinColumn(name = "user_id", nullable = false)
-    private user user; // Fixed naming convention for `User` (capitalized)
-
-    @ManyToOne
-    @JoinColumn(name = "project_id", nullable = true)  // Explicitly making nullable if needed
+    @JsonBackReference(value = "project-tasks")  // Prevent circular reference and add a unique reference
+    @JoinColumn(name = "project_id", referencedColumnName = "id", nullable = false)
     private Project project;
 
     private String title;
@@ -34,11 +36,11 @@ public class Task {
         this.id = id;
     }
 
-    public user getUser() {  // Changed from `user` to `User`
+    public user getUser() {
         return user;
     }
 
-    public void setUser(user user) {  // Changed from `user` to `User`
+    public void setUser(user user) {
         this.user = user;
     }
 

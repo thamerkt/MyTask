@@ -18,8 +18,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+@EnableWebMvc
 @Configuration
 public class ApplicationConfiguration {
 
@@ -60,39 +62,21 @@ public class ApplicationConfiguration {
         return authProvider;
     }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
-        try {
-            return http
-                    .csrf(csrf -> csrf.disable())  // Disable CSRF protection in the correct way
-                    .authorizeRequests(request -> request
-                            .requestMatchers("/auth/login", "/auth/register").permitAll()  // Allow unauthenticated access
-                            .anyRequest().permitAll()  // Require authentication for all other requests
-                    )
-                    .httpBasic(Customizer.withDefaults())  // Optional: Basic authentication support if needed
-                    .addFilterBefore(new JwtAuthenticationFilter(jwtService, userDetailsService()), UsernamePasswordAuthenticationFilter.class)  // Add custom JWT filter before username/password authentication filter
-                    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // Stateless authentication (no sessions)
-                    .build();
-        } catch (Exception e) {
-            // Log the exception (you can use a logger here)
-            System.err.println("Error configuring HTTP security: " + e.getMessage());
-            // Optionally, rethrow as a runtime exception or another custom exception
-            throw new RuntimeException("Error configuring HTTP security", e);
-        }
-    }
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:4200")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowedHeaders("*")
-                        .allowCredentials(true);
-            }
-        };
-    }
+
+
 
     // HTTP Security Configuration
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        return http
+                .csrf(csrf -> csrf.disable())  // Disable CSRF protection
+                .authorizeRequests(request -> request
+                        .requestMatchers("/**").permitAll()  // Allow unauthenticated access
+                        .anyRequest().permitAll()  // Require authentication for all other requests
+                )
+                .httpBasic(Customizer.withDefaults())  // Optional: Basic authentication support
+                .addFilterBefore(new JwtAuthenticationFilter(jwtService, userDetailsService()), UsernamePasswordAuthenticationFilter.class)  // Custom JWT filter
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // Stateless authentication (no sessions)
+                .build();
+    }
 }
