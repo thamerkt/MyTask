@@ -31,8 +31,11 @@ export class TaskserviceService {
   
     return this.http.put<Task>(`${this.apiUrl}${id}`, task, { headers });
   }
+  getTasksByUserId(userId: number): Observable<Task[]> {
+    return this.http.get<Task[]>(`${this.apiUrl}user/${userId}`);
+  }
 
   deleteTask(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }

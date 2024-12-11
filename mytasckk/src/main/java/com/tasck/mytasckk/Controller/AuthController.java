@@ -11,8 +11,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -31,61 +35,71 @@ public class AuthController {
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(); // Password encoder for hashing
 
     // Login endpoint
-    @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@RequestBody user loginRequest) {
+    @PostMapping("register")
+    public ResponseEntity<?> registerUser(@Validated @RequestBody user user, BindingResult result) {
+        Map<String, Object> response = new HashMap<>();
         try {
-            // Find user by email
-            Optional<user> optionalUser = userRepository.findByEmail(loginRequest.getEmail());
-
-            if (optionalUser.isPresent()) {
-                user foundUser = optionalUser.get();
-
-                // Check if the provided password matches the stored password
-                if (encoder.matches(loginRequest.getPassword(), foundUser.getPassword())) {
-                    // Authenticate the user
-                    Authentication authentication = authManager.authenticate(
-                            new UsernamePasswordAuthenticationToken(
-                                    foundUser.getEmail(),
-                                    loginRequest.getPassword()
-                            )
-                    );
-
-                    // Generate JWT token
-                    String token = jwtService.generateToken((UserDetails) authentication.getPrincipal());
-                    return ResponseEntity.ok(token);
-                } else {
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
-                }
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            if (result.hasErrors()) {
+                response.put("message", "Validation error");
+                return ResponseEntity.badRequest().body(response);
             }
+
+            // Check if user already exists
+            if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+                response.put("status", "error");
+                response.put("message", "User with this email already exists");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            // Encrypt password and save the user
+            user.setPassword(encoder.encode(user.getPassword()));
+            userRepository.save(user);
+
+            response.put("message", "User registered successfully");
+            return ResponseEntity.ok(response);
+
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error during authentication: " + e.getMessage());
+            response.put("message", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
         }
     }
 
-    // Signup endpoint
-    @PostMapping("/register")
-    public ResponseEntity<?> signupUser(@RequestBody user newUser) {
+    // Login route with try-catch, JSON response, and JWT token generation
+    @PostMapping("login")
+    public ResponseEntity<?> loginUser(@RequestBody user loginRequest) {
+        Map<String, Object> response = new HashMap<>();
         try {
-            // Check if user with the same email already exists
-            Optional<user> existingUser = userRepository.findByEmail(newUser.getEmail());
+            Optional<user> userOptional = userRepository.findByEmail(loginRequest.getEmail());
 
-            if (existingUser.isPresent()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email already used");
+            if (userOptional.isEmpty()) {
+                response.put("status", "error");
+                response.put("message", "User not found");
+                return ResponseEntity.status(404).body(response);
             }
 
-            // Encode the password before saving the new user
-            newUser.setPassword(encoder.encode(newUser.getPassword()));
+            user user = userOptional.get();
 
-            // Save the user to the database
-            user savedUser = userRepository.save(newUser);
+            // Validate the password
+            if (!encoder.matches(loginRequest.getPassword(), user.getPassword())) {
+                response.put("status", "error");
+                response.put("message", "Invalid credentials");
+                return ResponseEntity.status(401).body(response);
+            }
 
-            return ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully.");
+            // Generate JWT token after successful login
+            String token = jwtService.generateToken(user,user.getId()); // Using JWTService to generate the token
+
+            // Successful login response with JWT token
+            response.put("status", "success");
+            response.put("message", "Login successful");
+            response.put("user", user.getEmail());  // Optionally: Return user email or ID for reference
+            response.put("token", token);  // Include the JWT token in the response
+            return ResponseEntity.ok(response);
+
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Registration failed: " + e.getMessage());
+            response.put("status", "error");
+            response.put("message", "An unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
         }
     }
 }

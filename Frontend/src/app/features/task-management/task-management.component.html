@@ -33,17 +33,16 @@
           placeholder="Duration (e.g., 2 days)" 
           class="w-full mb-2 px-3 py-2 border border-gray-300 rounded-lg">
         
-        <input 
-          type="number" 
+          <select 
           [(ngModel)]="newTask.project.id" 
-          placeholder="Project ID" 
           class="w-full mb-4 px-3 py-2 border border-gray-300 rounded-lg">
+          <option *ngFor="let project of Projects" [value]="project.id">
+            {{ project.name }}
+          </option>
+        </select>
         
-        <input 
-          type="number" 
-          [(ngModel)]="newTask.user.id" 
-          placeholder="User ID" 
-          class="w-full mb-4 px-3 py-2 border border-gray-300 rounded-lg">
+        
+      
         
         <button 
           (click)="add()" 
@@ -119,17 +118,16 @@
           placeholder="Duration (e.g., 2 days)" 
           class="w-full mb-2 px-3 py-2 border border-gray-300 rounded-lg">
         
-        <input 
-          type="number" 
+          <select 
           [(ngModel)]="newTask.project.id" 
-          placeholder="Project ID" 
           class="w-full mb-4 px-3 py-2 border border-gray-300 rounded-lg">
+          <option *ngFor="let project of Projects" [value]="project.id">
+            {{ project.name }}
+          </option>
+        </select>
         
-        <input 
-          type="number" 
-          [(ngModel)]="newTask.user.id" 
-          placeholder="User ID" 
-          class="w-full mb-4 px-3 py-2 border border-gray-300 rounded-lg">
+        
+        
         
         <button 
           (click)="add()" 
@@ -211,11 +209,7 @@
           </option>
         </select>
         
-        <input 
-          type="number" 
-          [(ngModel)]="newTask.user.id" 
-          placeholder="User ID" 
-          class="w-full mb-4 px-3 py-2 border border-gray-300 rounded-lg">
+       
         
         <button 
           (click)="add()" 

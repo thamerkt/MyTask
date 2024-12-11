@@ -3,6 +3,8 @@ import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/dr
 import { Task } from 'src/app/core/models/task.model';
 import { TaskserviceService } from 'src/app/core/services/taskservice.service';
 import { Project } from 'src/app/core/models/project.model';
+import { jwtDecode } from 'jwt-decode';
+import { ProjectService } from 'src/app/core/services/projectservice.service';
 
 @Component({
   selector: 'app-task-management',
@@ -18,6 +20,7 @@ export class TaskManagementComponent implements OnInit {
   doingTasks: Task[] = [];
   doneTasks: Task[] = [];
   
+  userId: number=0;
   // Initialize a new task object
   newTask: Task = {
     title: "",
@@ -26,58 +29,93 @@ export class TaskManagementComponent implements OnInit {
     duration: "",
     description: "",
     user: {
-      id: 1 // Default user ID
+      id: this.userId// Default user ID
     },
     project: {
       id: 1 // Default project ID
     }
   };
   Projects:Project[]=[]
-  projectService: any;
+ 
+  
+  
 
-  constructor(private taskservice: TaskserviceService) {}
+  constructor(private taskservice: TaskserviceService,private projectService:ProjectService) {}
 
   ngOnInit(): void {
-    this.loadtask()
-    this.fetchProjects
+    this.userId = this.getUserFromToken()?.id;
+    if (this.userId) {
+      this.loadTasks(this.userId);
+      this.fetchProjects();
+    } else {
+      console.error('User ID could not be retrieved from the token.');
+    }
   }
-  loadtask(){
-    this.taskservice.getTasks().subscribe({
-      next: (data) => {
-        this.tasks = data;
-        this.filterTasksByStatus();
+
+  getUserFromToken(): any {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      return null; 
+    }
+    try {
+      const decodedToken: any = jwtDecode(token);
+      console.log('Decoded Token:', decodedToken);
+      return decodedToken; 
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return null;
+    }
+  }
+
+  // Load tasks related to the logged-in user
+  loadTasks(userId: number): void {
+    this.taskservice.getTasksByUserId(userId).subscribe({
+        next: (data: Task[]) => {
+            console.log('Fetched tasks:', data); // Check if `data` is an array
+            this.tasks = data;
+            console.log(this.tasks);
+            this.filterTasksByStatus();
+        },
+        error: (err) => {
+            console.error('Error fetching tasks:', err);
+        },
+    });
+}
+
+  fetchProjects(): void {
+    this.projectService.getProjects().subscribe({
+      next: (data: Project[]) => {
+        this.Projects = data;
       },
-      error: (err) => {
-        console.error('Error fetching tasks:', err);
-      }
+      error: (err: any) => {
+        console.error('Error fetching projects:', err);
+      },
     });
   }
+
   filterTasksByStatus(): void {
-    // Reset the task arrays before filtering
-    this.todoTasks = this.tasks.filter(task => task.status === 'To Do');
-    this.doingTasks = this.tasks.filter(task => task.status === 'Doing');
-    this.doneTasks = this.tasks.filter(task => task.status === 'Done');
+    this.todoTasks = this.tasks.filter((task) => task.status === 'To Do');
+    this.doingTasks = this.tasks.filter((task) => task.status === 'Doing');
+    this.doneTasks = this.tasks.filter((task) => task.status === 'Done');
   }
 
   drop(event: CdkDragDrop<Task[]>): void {
-    if (event.previousContainer !== event.container || event.previousIndex !== event.currentIndex) {
+    if (
+      event.previousContainer !== event.container ||
+      event.previousIndex !== event.currentIndex
+    ) {
       if (event.previousContainer === event.container) {
-        // Reorder within the same container
         moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
       } else {
-        // Transfer item between containers
         transferArrayItem(
           event.previousContainer.data,
           event.container.data,
           event.previousIndex,
           event.currentIndex
         );
-  
-        // Update task status based on the target container
         const task = event.container.data[event.currentIndex];
         task.status = this.getStatusFromContainerId(event.container.id);
-  
-        // Update task via API
+
         this.taskservice.updateTask(task.id!, task).subscribe({
           next: () => this.filterTasksByStatus(),
           error: (err) => console.error('Error updating task:', err),
@@ -87,24 +125,6 @@ export class TaskManagementComponent implements OnInit {
       console.log('No change in position or container.');
     }
   }
-  fetchProjects(): void {
-    this.projectService.getProjects().subscribe({
-      next: (data: Project[]) => {
-        this.Projects = data;
-      },
-      error: (err: any) => {
-        console.error('Error fetching projects:', err);
-      }
-    });}
-  getStatusFromContainerId(containerId: string): string {
-    switch (containerId) {
-      case 'todoList': return 'To Do';
-      case 'doingList': return 'Doing';
-      case 'doneList': return 'Done';
-      default: return '';
-    }
-  }
-
   add(): void {
     if(this.showForm==true){
       this.newTask.status="To Do"
@@ -115,6 +135,7 @@ export class TaskManagementComponent implements OnInit {
     if(this.showForm3==true){
       this.newTask.status="Done"
     }
+    this.newTask.user.id = this.userId;
     this.taskservice.createTask(this.newTask).subscribe({
       next: (response) => {
         console.log("Task added successfully:", response);
@@ -123,7 +144,7 @@ export class TaskManagementComponent implements OnInit {
         this.showForm = false; // Hide the form after submission
         this.showForm2 = false;
         this.showForm3 = false;
-        this.loadtask()
+        this.loadTasks(this.userId)
         this.resetNewTask(); // Reset the form
       },
       error: (error) => {
@@ -143,21 +164,33 @@ export class TaskManagementComponent implements OnInit {
       }
     });
   }
-  
+
+  getStatusFromContainerId(containerId: string): string {
+    switch (containerId) {
+      case 'todoList':
+        return 'To Do';
+      case 'doingList':
+        return 'Doing';
+      case 'doneList':
+        return 'Done';
+      default:
+        return '';
+    }
+  }
 
   resetNewTask(): void {
     this.newTask = {
-      title: "",
+      title: '',
       priority: 0,
-      status: "To Do",
-      duration: "",
-      description: "",
+      status: 'To Do',
+      duration: '',
+      description: '',
       user: {
-        id: 1
+        id: this.userId || 0,
       },
       project: {
-        id: 1
-      }
+        id: 1,
+      },
     };
-  }
-}
+  }}
+

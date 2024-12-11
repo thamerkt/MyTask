@@ -27,8 +27,6 @@ public class user implements UserDetails {
     @Column(nullable = false)
     private Integer id;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Task> tasks;
 
     @Column(nullable = false)
     private String fullName;
@@ -70,14 +68,9 @@ public class user implements UserDetails {
     // Getters and Setters
 
 
-    public List<Task> getTasks() {
-        return tasks;
-    }
 
 
-    public void setTasks(List<Task> tasks) {
-        this.tasks = tasks;
-    }
+
 
     public String getFullName() {
         return fullName;

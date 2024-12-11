@@ -76,6 +76,27 @@ public class TaskController {
                         .body("Error finding task: " + e.getMessage());
             }
         }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getTasksByUserId(@PathVariable Long userId) {
+        try {
+            // Retrieve tasks by user_id
+            List<Task> userTasks = taskRep.findByUserId(userId);
+
+            // Check if the list is empty
+            if (userTasks.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No tasks found for the user");
+            }
+
+            // Return the tasks
+            return ResponseEntity.ok(userTasks);
+        } catch (Exception e) {
+            // Handle unexpected errors
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error retrieving tasks for the user: " + e.getMessage());
+        }
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<?> updateProject(@PathVariable Long id, @RequestBody Task updatedTask) {
         // Retrieve the task by id
